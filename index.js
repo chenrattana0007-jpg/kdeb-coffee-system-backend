@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
 
-// --- NEW: THE DEBUG BLOCK ---
+// --- DEBUG INFO ---
 console.log("=== DEBUG INFO ===");
 console.log("Is the URL loaded?:", process.env.DATABASE_URL ? "YES" : "NO (It is undefined!)");
 if (process.env.DATABASE_URL) {
@@ -34,15 +34,15 @@ app.get('/api/test', async (req, res) => {
     }
 });
 
-// Menu Route (Fetching your Caffe Lattes and Matcha Green Teas)
+// FIXED: Menu Route (Now querying 'products' instead of 'menu')
 app.get('/api/menu', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM menu'); 
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Database error:", err.message);
-    res.status(500).json({ error: "Failed to load menu" });
-  }
+    try {
+        const products = await pool.query('SELECT * FROM products WHERE is_active = TRUE');
+        res.json({ success: true, count: products.rowCount, data: products.rows });
+    } catch (err) {
+        console.error("Menu Route Error:", err.message);
+        res.status(500).json({ error: "Failed to load menu" });
+    }
 });
 
 // Modifiers Route
